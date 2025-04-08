@@ -1,57 +1,55 @@
-import { CartItem } from "../types/CartItem";  // importing the cartitem interface from the types folder
+import { CartItem } from "../types/CartItem";
 import { useState, ReactNode, useContext, createContext } from "react";
 
-// cart context interface, essentially an object, stores an array of cart items, and then has functions for adding, removing and clearing the items from the cart.
+// Defines the structure for our cart context, including cart data and utility functions
 interface CartContextType {
     cart: CartItem[];
     addToCart: (item: CartItem) => void;
     removeFromCart: (bookId: number) => void;
     clearCart: () => void;
-};
+}
 
-// creating the cart context, using the cartContext hook
-const CartContext = createContext<CartContextType | undefined>(undefined); // setting it to undefined by default
+// Create the cart context with a default of undefined
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const CartProvider = ({children } : {children: ReactNode}) => {
+// Main context provider component — wraps app to make cart features globally accessible
+export const CartProvider = ({ children }: { children: ReactNode }) => {
     const [cart, setCart] = useState<CartItem[]>([]);
 
+    // Adds a new item or updates quantity if it already exists
     const addToCart = (item: CartItem) => {
         setCart((prevCart) => {
-            const existingItem = prevCart.find((cartItem) => cartItem.bookId === item.bookId);
-
-            if (existingItem) {
-                // Update the existing item's quantity
-                return prevCart.map((cartItem) =>
-                    cartItem.bookId === item.bookId
-                        ? { ...cartItem, quantity: cartItem.quantity + item.quantity } // updating the quantity of the item in the cart
-                        : cartItem
-                );
-            } else {
-                // Add the new item to the cart
-                return [...prevCart, item];
-            }
+            const found = prevCart.find((i) => i.bookId === item.bookId);
+            return found
+                ? prevCart.map((i) =>
+                      i.bookId === item.bookId
+                          ? { ...i, quantity: i.quantity + item.quantity }
+                          : i
+                  )
+                : [...prevCart, item];
         });
     };
+
+    // Removes a specific item based on book ID
     const removeFromCart = (bookId: number) => {
-        // filtering out an item that has been removed from the cart, takes the book id and then filters the cart array to remove the item with that book id.
         setCart((prevCart) => prevCart.filter((item) => item.bookId !== bookId));
     };
 
+    // Empties the entire cart
     const clearCart = () => {
-        setCart([]); // setting the cart to an empty array. 
+        setCart([]);
     };
 
     return (
         <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart }}>
             {children}
         </CartContext.Provider>
-    )
-    
+    );
 };
 
-// useCart hook that we created to use the cart context in other components.
+// Custom hook to access cart context easily from components
 export const useCart = () => {
-    const context = useContext(CartContext); // this could cause errors 
+    const context = useContext(CartContext);
     if (context === undefined) {
         throw new Error("useCart must be used within a CartProvider");
     }

@@ -9,78 +9,66 @@ namespace backend.Controllers
     [ApiController]
     public class BooksController : ControllerBase
     {
-        private AppDbContext _dbContext;
+        private readonly AppDbContext _context;
 
-        public BooksController(AppDbContext temp)
+        public BooksController(AppDbContext context)
         {
-            _dbContext = temp;
+            _context = context;
         }
 
         [HttpGet("SomeBooks")]
-        // Returns a filtered, paginated, and optionally sorted list of books.
-        // Supports optional category filtering via query string.
+        // Retrieves a subset of books with optional filtering, sorting, and pagination.
         public IActionResult GetBooks(int pageSize = 5, int page = 1, int sorted = 1, [FromQuery] List<string>? categories = null)
         {
-            var query = _dbContext.Books.AsQueryable();
+            var query = _context.Books.AsQueryable();
 
-            // Apply category filtering if any categories are specified
-            if (categories != null && categories.Count > 0)
+            // Filter by category if applicable
+            if (categories != null && categories.Any())
             {
-                query = query.Where(b => categories.Contains(b.Category));
+                query = query.Where(book => categories.Contains(book.Category));
             }
 
-            // Log and set a test cookie for demonstration
-            string? favoriteBook = Request.Cookies["BookType"];
-            Console.WriteLine("~~~~~COOKIE~~~~~~~ " + favoriteBook);
+            // Read client-side preference cookie
+            var preferredCategory = Request.Cookies["BookType"];
+            Console.WriteLine("[COOKIE] Client preference: " + preferredCategory);
 
-            HttpContext.Response.Cookies.Append("BookType", "Fiction", new CookieOptions
+            // Set a secure cookie on the client
+            Response.Cookies.Append("BookType", "Fiction", new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Expires = DateTime.Now.AddMinutes(1)
+                Expires = DateTime.UtcNow.AddMinutes(1)
             });
 
-            // Sort by title if specified
             if (sorted == 1)
             {
-                query = query.OrderBy(b => b.Title);
+                query = query.OrderBy(book => book.Title);
             }
 
-            var totalCount = query.Count();
+            var total = query.Count();
+            var pagedBooks = query.Skip(pageSize * (page - 1)).Take(pageSize).ToList();
 
-            // Apply pagination
-            var books = query
-                .Skip(pageSize * (page - 1))
-                .Take(pageSize)
-                .ToList();
-
-            var response = new
-            {
-                Books = books,
-                Count = totalCount
-            };
-
-            return Ok(response);
+            return Ok(new { Books = pagedBooks, Count = total });
         }
 
         [HttpGet("AllBooks")]
-        // Returns all books with no filtering, sorting, or pagination
-        public IEnumerable<Book> Get()
+        // Returns all books in the system with no filtering
+        public IEnumerable<Book> GetAllBooks()
         {
-            return _dbContext.Books;
+            return _context.Books;
         }
 
         [HttpGet("GetBookCategories")]
-        // Returns a distinct list of all book categories
+        // Provides a list of all available categories
         public IActionResult GetBookCategories()
         {
-            var categories = _dbContext.Books
+            var allCategories = _context.Books
                 .Select(b => b.Category)
                 .Distinct()
                 .ToList();
 
-            return Ok(categories);
+            return Ok(allCategories);
         }
     }
 }

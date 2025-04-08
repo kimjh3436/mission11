@@ -1,13 +1,19 @@
 import { useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext"; // importing the cart context to be able to add things to cart
+import { useCart } from "../context/CartContext";
 
+// Sticky cart summary that shows total price and redirects to cart page
 const CartSummary = () => {
     const navigate = useNavigate();
-    const { cart } = useCart(); //using the cart object
-    const totalAmount = cart.reduce((total, item) => total +  item.price * item.quantity, 0); // This should be replaced with the actual total amount from your cart context or state.
+    const { cart } = useCart();
+
+    // Calculate the full cart total
+    const totalAmount = cart.reduce(
+        (total, item) => total + item.price * item.quantity,
+        0
+    );
+
     return (
         <div
-        // lots of styling being added
             style={{
                 position: "fixed",
                 top: "20px",
@@ -24,8 +30,8 @@ const CartSummary = () => {
                 boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                 fontSize: "14px",
                 zIndex: 1000,
-                width: "120px", // Set a fixed width to prevent it from expanding
-                textAlign: "center", // Center-align the text
+                width: "120px",
+                textAlign: "center",
             }}
             onClick={() => navigate("/cart")}
         >
@@ -33,6 +39,6 @@ const CartSummary = () => {
             <strong>${totalAmount.toFixed(2)}</strong>
         </div>
     );
-}
+};
 
 export default CartSummary;

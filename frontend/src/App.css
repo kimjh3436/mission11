@@ -5,6 +5,7 @@
   text-align: center;
 }
 
+/* Simple rotation animation used in Vite template */
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -14,6 +15,7 @@
   }
 }
 
+/* Optional animation targeting the second link logo */
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
@@ -27,3 +29,4 @@
 .read-the-docs {
   color: #888;
 }
+
