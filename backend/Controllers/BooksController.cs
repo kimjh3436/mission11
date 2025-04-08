@@ -2,8 +2,6 @@
 using backend.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration.UserSecrets;
-
 
 namespace backend.Controllers
 {
@@ -12,51 +10,50 @@ namespace backend.Controllers
     public class BooksController : ControllerBase
     {
         private AppDbContext _dbContext;
+
         public BooksController(AppDbContext temp)
         {
             _dbContext = temp;
         }
 
         [HttpGet("SomeBooks")]
-        // setting the parameters, as well as their default values if nothing is passed. 
-        public IActionResult GetBooks(int pageSize = 5, int page = 1, int sorted = 1)
+        // Returns a filtered, paginated, and optionally sorted list of books.
+        // Supports optional category filtering via query string.
+        public IActionResult GetBooks(int pageSize = 5, int page = 1, int sorted = 1, [FromQuery] List<string>? categories = null)
         {
-            // logging the cookie for 414
-            string? favoriteBook = Request.Cookies["BookType"];
-            Console.WriteLine("~~~~~COOKIE~~~~~~~" + favoriteBook);
+            var query = _dbContext.Books.AsQueryable();
 
-            // setting cookies for 414
-            HttpContext.Response.Cookies.Append("BookType", "Fiction", new CookieOptions()
+            // Apply category filtering if any categories are specified
+            if (categories != null && categories.Count > 0)
+            {
+                query = query.Where(b => categories.Contains(b.Category));
+            }
+
+            // Log and set a test cookie for demonstration
+            string? favoriteBook = Request.Cookies["BookType"];
+            Console.WriteLine("~~~~~COOKIE~~~~~~~ " + favoriteBook);
+
+            HttpContext.Response.Cookies.Append("BookType", "Fiction", new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true, // Fixed the syntax error here
+                Secure = true,
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.Now.AddMinutes(1)
             });
 
-            // delcaring the list variable
-            List<Book> books = new List<Book>(); // Initialize with an empty list
-
-            // if they want to sort it, this will sort the books
+            // Sort by title if specified
             if (sorted == 1)
             {
-                books = _dbContext.Books
-                    .OrderBy(b => b.Title) // sorting by title alphabetically
-                    .Skip(pageSize * (page - 1))
-                    .Take(pageSize)
-                    .ToList();
-            }
-            // if not, it won't sort.
-            else if (sorted == 0)
-            {
-                books = _dbContext.Books
-                    .Skip(pageSize * (page - 1))
-                    .Take(pageSize)
-                    .ToList();
+                query = query.OrderBy(b => b.Title);
             }
 
-            // Always set books to prevent uninitialized usage
-            var totalCount = _dbContext.Books.Count();
+            var totalCount = query.Count();
+
+            // Apply pagination
+            var books = query
+                .Skip(pageSize * (page - 1))
+                .Take(pageSize)
+                .ToList();
 
             var response = new
             {
@@ -64,17 +61,26 @@ namespace backend.Controllers
                 Count = totalCount
             };
 
-
             return Ok(response);
         }
 
-
         [HttpGet("AllBooks")]
-        // getting all the books with no filters or anything
+        // Returns all books with no filtering, sorting, or pagination
         public IEnumerable<Book> Get()
         {
-
             return _dbContext.Books;
+        }
+
+        [HttpGet("GetBookCategories")]
+        // Returns a distinct list of all book categories
+        public IActionResult GetBookCategories()
+        {
+            var categories = _dbContext.Books
+                .Select(b => b.Category)
+                .Distinct()
+                .ToList();
+
+            return Ok(categories);
         }
     }
 }
