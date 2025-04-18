@@ -3671,11 +3671,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\kimjh\\OneDrive\\Desktop\\Mission11\\backend\\backend.csproj",
+      "projectUniqueName": "C:\\Users\\kimjh\\source\\repos\\mission11\\backend\\backend.csproj",
       "projectName": "backend",
-      "projectPath": "C:\\Users\\kimjh\\OneDrive\\Desktop\\Mission11\\backend\\backend.csproj",
+      "projectPath": "C:\\Users\\kimjh\\source\\repos\\mission11\\backend\\backend.csproj",
       "packagesPath": "C:\\Users\\kimjh\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\kimjh\\OneDrive\\Desktop\\Mission11\\backend\\obj\\",
+      "outputPath": "C:\\Users\\kimjh\\source\\repos\\mission11\\backend\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

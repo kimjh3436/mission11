@@ -1,0 +1,41 @@
+# Ignore build outputs
+bin/
+obj/
+
+# Ignore Rider project files
+.idea/
+
+# Ignore Visual Studio files
+.vs/
+*.user
+*.suo
+
+# Ignore user-specific files
+*.userosscache
+*.sln.docstates
+
+# Ignore Mac OS files
+.DS_Store
+
+# Ignore logs and temp files
+*.log
+*.tmp
+
+# Ignore SQLite DBs (if used)
+*.db
+*.sqlite
+
+# Ignore npm stuff (for frontend)
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+
+# Ignore React/Vite build outputs
+frontend/dist/
+frontend/node_modules/
+.vite/
+
+# Ignore generated files
+*.Generated.cs
